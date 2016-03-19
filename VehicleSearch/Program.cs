@@ -16,8 +16,6 @@ namespace VehicleSearch
 {
     public class Program
     {
-        private const string DatePattern = "yyyyMMddHHmmss";
-
         public static void Main(string[] args)
         {
             var cloudStorageAccount = InitializeCloudStorage();
