@@ -244,7 +244,7 @@ namespace VehicleSearch
                 await table.ExecuteAsync(operation);
             }
 
-            Console.Out.WriteLine("Uploaded data {0} to storage in {0} seconds at {1} per second", operations.Count, watch.Elapsed.TotalSeconds, operations.Count / watch.Elapsed.TotalSeconds);
+            Console.Out.WriteLine("Uploaded data {0} to storage in {1} seconds at {2} per second", operations.Count, watch.Elapsed.TotalSeconds, operations.Count / watch.Elapsed.TotalSeconds);
         }
     }
 }
