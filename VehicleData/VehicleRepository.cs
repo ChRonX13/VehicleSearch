@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
@@ -17,18 +18,27 @@ namespace VehicleData
             _table = GetCloudTable(cloudStorageAccount, "VehicleSearch");
         }
 
-        public IList<Vehicle> GetVehicle(string mdl)
+        public VehicleResults GetVehicle(string mdl)
         {
             if (string.IsNullOrWhiteSpace(mdl))
             {
                 return null;
             }
 
+
             TableQuery<Vehicle> query =
                 new TableQuery<Vehicle>().Where(TableQuery.GenerateFilterCondition("PartitionKey",
                     QueryComparisons.Equal, mdl));
 
-            return _table.ExecuteQuery(query).ToList();
+            Stopwatch watch = Stopwatch.StartNew();
+
+            var vehicles = _table.ExecuteQuery(query).ToList();
+
+            return new VehicleResults
+            {
+                TimeTaken = watch.ElapsedMilliseconds,
+                Vehicles = vehicles
+            };
         }
 
         private CloudTable GetCloudTable(CloudStorageAccount storageAccount, string tableName)

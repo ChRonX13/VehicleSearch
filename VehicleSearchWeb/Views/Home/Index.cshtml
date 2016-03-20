@@ -1,7 +1,44 @@
-﻿@section SPAViews {
-    @Html.Partial("_Home")
+﻿@model VehicleData.VehicleResults
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Error";
 }
-@section Scripts{
-    @Scripts.Render("~/bundles/knockout")
-    @Scripts.Render("~/bundles/app")
+
+<h2>Vehicle Search POC</h2>
+
+
+@using (Html.BeginForm("Search", "Home", FormMethod.Get))
+{
+<p>
+    Title: @Html.TextBox("SearchString") <br />
+    <input type="submit" value="Filter" />
+</p>
 }
+
+@if (Model != null)
+{
+    <p>Returned @Model.Vehicles.Count records in @Model.TimeTaken ms</p>
+}
+<table>
+    @if (Model != null && Model.Vehicles != null)
+    {
+        foreach (var vehicle in Model.Vehicles)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => vehicle.PartitionKey)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => vehicle.IncidentDateTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => vehicle.Latitude)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => vehicle.Longitude)
+                </td>
+            </tr>
+        }
+    }
+
+</table>

@@ -1,6 +1,0 @@
-namespace VehicleSearchWeb.Areas.HelpPage.ModelDescriptions
-{
-    public class SimpleTypeModelDescription : ModelDescription
-    {
-    }
-}

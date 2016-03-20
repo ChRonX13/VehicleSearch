@@ -7,8 +7,6 @@ namespace VehicleData
     {
         public DateTime IncidentDateTime { get; set; }
 
-        public string Mdl { get; set; }
-
         public string Latitude { get; set; }
 
         public string Longitude { get; set; }

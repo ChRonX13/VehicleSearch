@@ -4,6 +4,6 @@ namespace VehicleData
 {
     public interface IVehicleRepository
     {
-        IList<Vehicle> GetVehicle(string mdl);
+        VehicleResults GetVehicle(string mdl);
     }
 }
