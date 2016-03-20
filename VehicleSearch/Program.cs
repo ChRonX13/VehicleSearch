@@ -30,7 +30,7 @@ namespace VehicleSearch
             var table = GetCloudTable(cloudStorageAccount, "VehicleSearch");
 
             UploadToTheCloudzBatch(table, batchOperations).Wait();
-            UploadToTheCloudz(table, tableOperations).Wait();
+            TuneThisUp(table, tableOperations);
 
             //Console.ReadLine();
         }
@@ -50,7 +50,7 @@ namespace VehicleSearch
                         .ToList();
 
                 Console.Out.WriteLine("Parsed {0} records, {1} per second, in {2} seconds", records.Count,
-                    records.Count/watch.Elapsed.TotalSeconds, watch.Elapsed.TotalSeconds);
+                    $"{records.Count/watch.Elapsed.TotalSeconds:0.0}", $"{watch.Elapsed.TotalSeconds:0.0}");
 
                 return records;
             }
@@ -78,7 +78,7 @@ namespace VehicleSearch
                             .ToList();
 
                     Console.Out.WriteLine("Parsed {0} records, {1} per second, in {2} seconds", records.Count,
-                        records.Count / watch.Elapsed.TotalSeconds, watch.Elapsed.TotalSeconds);
+                        $"{records.Count / watch.Elapsed.TotalSeconds:0.0}", $"{watch.Elapsed.TotalSeconds:0.0}");
 
                     return records;
                 }
@@ -136,17 +136,10 @@ namespace VehicleSearch
 
             var batchVehicles = GetBatchVehicles(vehicleData);
 
-            var batchOperations = new List<TableBatchOperation>();
-
-            ParallelOptions po = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
-            };
-
-            Parallel.ForEach(batchVehicles, po, mdls => batchOperations.Add(GenerateBatchOperation(mdls)));
+            var batchOperations = batchVehicles.Select(GenerateBatchOperation).ToList();
 
             Console.Out.WriteLine("Generated all the batch operations {0} in {1} seconds at {2} per second", batchVehicles.Count,
-                watch.Elapsed.TotalSeconds, batchVehicles.Count/watch.Elapsed.TotalSeconds);
+                $"{watch.Elapsed.TotalSeconds:0.0}", $"{batchVehicles.Count/watch.Elapsed.TotalSeconds:0.0}");
 
             return batchOperations;
         }
@@ -163,7 +156,7 @@ namespace VehicleSearch
 
             Console.Out.WriteLine("Generated all the single operations {0} in {1} seconds at {2} per second",
                 uniqueVehicles.Count,
-                watch.Elapsed.TotalSeconds, uniqueVehicles.Count/watch.Elapsed.TotalSeconds);
+                $"{watch.Elapsed.TotalSeconds:0.0}", $"{uniqueVehicles.Count/watch.Elapsed.TotalSeconds:0.0}");
             
 
             return tableOperations;
@@ -199,7 +192,7 @@ namespace VehicleSearch
                     RowKey = Guid.NewGuid().ToString(),
                     Latitude = data.Latitude,
                     Longitude = data.Longitude,
-                    Timestamp = data.IncidentDateTime
+                    IncidentDateTime = data.IncidentDateTime
                 });
             }
 
@@ -214,7 +207,7 @@ namespace VehicleSearch
                 RowKey = Guid.NewGuid().ToString(),
                 Latitude = vehicleData.Latitude,
                 Longitude = vehicleData.Longitude,
-                Timestamp = vehicleData.IncidentDateTime
+                IncidentDateTime = vehicleData.IncidentDateTime
             });
         }
 
@@ -226,16 +219,53 @@ namespace VehicleSearch
 
             foreach (var batchOperation in batchOperations)
             {
-                await table.ExecuteBatchAsync(batchOperation);
+                try
+                {
+                    await table.ExecuteBatchAsync(batchOperation);
+                }
+                catch (StorageException se)
+                {
+                    Console.Out.WriteLine("Unexpected: {0} - {1}", se.Message, se.RequestInformation.ExtendedErrorInformation.ErrorMessage);
+                }
 
             }
 
-            Console.Out.WriteLine("Uploaded batch data {0} to storage in {1} seconds at {2} per second", batchOperations.Count, watch.Elapsed.TotalSeconds, batchOperations.Count / watch.Elapsed.TotalSeconds);
+            Console.Out.WriteLine("Uploaded batch data {0} to storage in {1} seconds at {2} per second", batchOperations.Count, $"{watch.Elapsed.TotalSeconds:0.0}", $"{batchOperations.Count / watch.Elapsed.TotalSeconds:0.0}");
         }
 
-        private static async Task UploadToTheCloudz(CloudTable table, IList<TableOperation> operations)
+        private static void TuneThisUp(CloudTable table, IList<TableOperation> operations)
         {
-            Console.Out.WriteLine("To the cl0udz!!");
+            int batchSize = 50000;
+            var batched = operations.Select((x, i) => new { Val = x, Idx = i })
+                                        .GroupBy(x => x.Idx / batchSize,
+                                                 (k, g) => g.Select(x => x.Val));
+
+            int batchCount = 0;
+            var uploadTasks = new List<Task>();
+
+            ThreadPool.SetMaxThreads(500, 5000);
+
+            foreach (var batch in batched)
+            {
+                batchCount++;
+                var internalNumber = batchCount;
+
+                Console.WriteLine("Processing batch({0})...", internalNumber);
+
+
+                uploadTasks.Add(Task.Run(async () =>
+                {
+                    await (UploadToTheCloudz(table, batch.ToList(), internalNumber));
+                    Console.Out.WriteLine("Finished batch({0})", internalNumber);
+                }));
+            }
+
+            Task.WaitAll(uploadTasks.ToArray());
+        }
+
+        private static async Task UploadToTheCloudz(CloudTable table, IList<TableOperation> operations, int batchNumber)
+        {
+            Console.Out.WriteLine("({0}) To the cl0udz!!", batchNumber);
 
             Stopwatch watch = Stopwatch.StartNew();
 
@@ -244,7 +274,9 @@ namespace VehicleSearch
                 await table.ExecuteAsync(operation);
             }
 
-            Console.Out.WriteLine("Uploaded data {0} to storage in {1} seconds at {2} per second", operations.Count, watch.Elapsed.TotalSeconds, operations.Count / watch.Elapsed.TotalSeconds);
+            Console.Out.WriteLine("({0}) Uploaded data {1} to storage in {2} seconds at {3} per second", batchNumber,
+                operations.Count, $"{watch.Elapsed.TotalSeconds:0.0}",
+                $"{operations.Count/watch.Elapsed.TotalSeconds:0.0}");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using System;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace VehicleSearch
 {
@@ -7,5 +8,7 @@ namespace VehicleSearch
         public string Latitude { get; set; }
 
         public string Longitude { get; set; }
+
+        public DateTime IncidentDateTime { get; set; }
     }
 }
