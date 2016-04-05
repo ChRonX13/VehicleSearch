@@ -3,19 +3,12 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Vehicle Search";
 }
-<h2>Vehicle Search POC</h2>
-
-
-@using (Html.BeginForm("Search", "Home", FormMethod.Get))
-{
-    <p>
-        Title: @Html.TextBox("SearchString") <br/>
-        <input type="submit" value="Filter"/>
-    </p>
-}
 <script src="https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.js"></script>
 <link href="https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.css" rel="stylesheet"/>
 <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700' rel='stylesheet'>
+<script src='https://api.mapbox.com/mapbox.js/plugins/mapbox-directions.js/v0.4.0/mapbox.directions.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox.js/plugins/mapbox-directions.js/v0.4.0/mapbox.directions.css' type='text/css'/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 <style>
     body {
     color:#404040;
@@ -41,10 +34,9 @@
   a:hover { color:#101010; }
 
   .sidebar {
-    position:absolute;
+    float: left;
     width:20%;
-    height:80%;
-    top:200px;left:0;
+    height:600px;
     overflow:hidden;
     border-right:1px solid rgba(0,0,0,0.25);
   }
@@ -55,10 +47,8 @@
     color:#888;
   }
   .map {
-    position:absolute;
-    left:20%;
-    width:80%;
-    top:200px;bottom:0;
+    overflow: auto;
+    height: 600px;
   }
   .heading {
     background:#fff;
@@ -141,58 +131,70 @@
   }
   .leaflet-container .leaflet-marker-icon { cursor:pointer; }
 </style>
-
+<!-- 1ECP337 -->
 <div class="container">
-    @if (Model != null)
-    {
-        <p>Returned @Model.Vehicles.Count records in @Model.TimeTaken ms</p>
-    }
-</div>
-<hr/>
-<div class="container">
-    <div class='sidebar'>
-        <div class='heading'>
-            <h1>Vehicles</h1>
-        </div>
-        <div id='listings' class='listings'></div>
-    </div>
-    <div id='map' class='map pad2'></div>
-    <script>
-        L.mapbox.accessToken = 'pk.eyJ1IjoiY2hyb254IiwiYSI6IjQxNTViMDkwMmEyNTQ4NWFhODlkM2U4YzhlNzkwZWI5In0.hLXXvGxlGLPpa4bckwjeNg';
-        var map = L.mapbox.map('map', 'mapbox.light')
-            .setView([-31.952222, 115.858889], 12);
-
-        var myLayer = L.mapbox.featureLayer().addTo(map);
-
-        // Once we've got a position, zoom and center the map
-        // on it, and add a single marker.
-        map.on('locationfound', function (e) {
-            map.panTo(e.latlng);
-
-            myLayer.setGeoJSON({
-                type: 'Feature',
-                geometry: {
-                    type: 'Point',
-                    coordinates: [e.latlng.lng, e.latlng.lat]
-                },
-                properties: {
-                    'title': 'Here I am!',
-                    'marker-color': '#ff8888',
-                    'marker-symbol': 'star'
-                }
-            });
-        });
-
-        map.locate();
-
-        var featureLayer = L.mapbox.featureLayer().addTo(map);
-        var features = [];
-
-        @if (Model != null && Model.Vehicles != null)
+    <div class="row">
+        @using (Html.BeginForm("Search", "Home", FormMethod.Get))
         {
-            foreach (var vehicle in Model.Vehicles)
+            <div class="input-group input-group-lg col-md-10 col-md-offset-1">
+                @Html.TextBox("SearchString", null, new {@class = "form-control input-lg", placeholder = "Vehicle MDL", autocomplete = "off" })
+                <span class="input-group-btn">
+                    <button class="btn btn-danger" type="submit">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </span>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model != null && Model.Vehicles != null)
+{
+    <hr/>
+    <div class="container-fluid">
+        <div class='sidebar'>
+            <div class='heading'>
+                <h1>Vehicles</h1>
+            </div>
+            <div id='listings' class='listings'></div>
+        </div>
+        <div id='map' class='map pad2'></div>
+        <script>
+            L.mapbox.accessToken = 'pk.eyJ1IjoiY2hyb254IiwiYSI6IjQxNTViMDkwMmEyNTQ4NWFhODlkM2U4YzhlNzkwZWI5In0.hLXXvGxlGLPpa4bckwjeNg';
+            var map = L.mapbox.map('map', 'mapbox.light')
+                .setView([-31.952222, 115.858889], 12);
+
+            var myLayer = L.mapbox.featureLayer().addTo(map);
+
+            // Once we've got a position, zoom and center the map
+            // on it, and add a single marker.
+            map.on('locationfound', function(e) {
+                map.panTo(e.latlng);
+
+                myLayer.setGeoJSON({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [e.latlng.lng, e.latlng.lat]
+                    },
+                    properties: {
+                        'title': 'Here I am!',
+                        'marker-color': '#ff8888',
+                        'marker-symbol': 'star'
+                    }
+                });
+            });
+
+            map.locate();
+
+            var featureLayer = L.mapbox.featureLayer().addTo(map);
+            var features = [];
+
+            @if (Model != null && Model.Vehicles != null)
             {
-                <text>
+                foreach (var vehicle in Model.Vehicles)
+                {
+                    <text>
             features.push({
                 // this feature is in the GeoJSON format: see geojson.org
                 // for the full specification
@@ -218,74 +220,83 @@
                 }
             });
             </text>
-            }
-        }
-
-        var listings = document.getElementById('listings');
-
-        featureLayer.setGeoJSON({
-            type: 'FeatureCollection',
-            features: features
-        });
-
-
-        function setActive(el) {
-            var siblings = listings.getElementsByTagName('div');
-            for (var i = 0; i < siblings.length; i++) {
-                siblings[i].className = siblings[i].className
-                    .replace(/active/, '').replace(/\s\s*$/, '');
+                }
             }
 
-            el.className += ' active';
-        }
+            var listings = document.getElementById('listings');
 
-        featureLayer.eachLayer(function(locale) {
-            // Shorten locale.feature.properties to just `prop` so we're not
-            // writing this long form over and over again.
-            var prop = locale.feature.properties;
-
-            // Each marker on the map.
-            var popup = '<h3>' + prop.title + '</h3><div>';
-
-            var listing = listings.appendChild(document.createElement('div'));
-            listing.className = 'item';
-
-            var link = listing.appendChild(document.createElement('a'));
-            link.href = '#';
-            link.className = 'title';
-
-            link.innerHTML = prop.title;
-
-            if (prop.description) {
-                popup += '<small class="quiet">' + prop.description + '</small>';
-            }
-
-            var details = listing.appendChild(document.createElement('div'));
-            details.innerHTML = prop.description;
-
-            link.onclick = function () {
-                setActive(listing);
-
-                // When a menu item is clicked, animate the map to center
-                // its associated locale and open its popup.
-                map.setView(locale.getLatLng(), 12);
-                locale.openPopup();
-                return false;
-            };
-
-            // Marker interaction
-            locale.on('click', function () {
-                // 1. center the map on the selected marker.
-                map.panTo(locale.getLatLng());
-
-                // 2. Set active the markers associated listing.
-                setActive(listing);
+            featureLayer.setGeoJSON({
+                type: 'FeatureCollection',
+                features: features
             });
 
-            popup += '</div>';
-            locale.bindPopup(popup);
-        });
+
+            function setActive(el) {
+                var siblings = listings.getElementsByTagName('div');
+                for (var i = 0; i < siblings.length; i++) {
+                    siblings[i].className = siblings[i].className
+                        .replace(/active/, '').replace(/\s\s*$/, '');
+                }
+
+                el.className += ' active';
+            }
+
+            featureLayer.eachLayer(function(locale) {
+                // Shorten locale.feature.properties to just `prop` so we're not
+                // writing this long form over and over again.
+                var prop = locale.feature.properties;
+
+                // Each marker on the map.
+                var popup = '<h3>' + prop.title + '</h3><div>';
+
+                var listing = listings.appendChild(document.createElement('div'));
+                listing.className = 'item';
+
+                var link = listing.appendChild(document.createElement('a'));
+                link.href = '#';
+                link.className = 'title';
+
+                link.innerHTML = prop.title;
+
+                if (prop.description) {
+                    popup += '<small class="quiet">' + prop.description + '</small>';
+                }
+
+                var details = listing.appendChild(document.createElement('div'));
+                details.innerHTML = prop.description;
+
+                link.onclick = function() {
+                    setActive(listing);
+
+                    // When a menu item is clicked, animate the map to center
+                    // its associated locale and open its popup.
+                    map.setView(locale.getLatLng(), 12);
+                    locale.openPopup();
+                    return false;
+                };
+
+                // Marker interaction
+                locale.on('click', function() {
+                    // 1. center the map on the selected marker.
+                    map.panTo(locale.getLatLng());
+
+                    // 2. Set active the markers associated listing.
+                    setActive(listing);
+
+                    L.mapbox.directions([
+                            { latitude: 33.6, longitude: -95.4431 },
+                            { latitude: 33.2, longitude: -95.4431 }
+                        ],
+                        function(err, res) {
+                            // res is a document with directions
+                        });
+                });
+
+                popup += '</div>';
+                locale.bindPopup(popup);
+            });
 
 
-    </script>
-</div>
+        </script>
+    </div>
+}
