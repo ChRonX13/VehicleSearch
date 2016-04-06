@@ -1,6 +1,7 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    font-family: 'Lato', sans-serif;
 }
 
 /* Set padding to keep content from hitting the edges */
@@ -14,4 +15,12 @@
 */
 .dl-horizontal dt {
     white-space: normal;
+}
+
+#bootstrap-overrides .jumbotron {
+    background-color: #00AEEF;
+}
+
+#bootstrap-overrides h1 {
+    color: white;
 }
