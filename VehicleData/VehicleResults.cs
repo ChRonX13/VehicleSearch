@@ -7,5 +7,7 @@ namespace VehicleData
         public long TimeTaken { get; set; }
 
         public IList<Vehicle> Vehicles { get; set; }
+
+        public string MDL { get; set; }
     }
 }

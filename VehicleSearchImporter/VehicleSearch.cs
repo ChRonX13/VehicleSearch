@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace VehicleSearch
+namespace VehicleSearchImporter
 {
     public class VehicleSearch : TableEntity
     {

@@ -12,7 +12,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace VehicleSearch
+namespace VehicleSearchImporter
 {
     public class Program
     {
@@ -22,6 +22,7 @@ namespace VehicleSearch
 
             var blobContainer = GetCloudBlobContainer(cloudStorageAccount, "trafficdata");
 
+            //var vehicleData = ReadDataFromFile(@"G:\MSWorkspace\incident.csv");
             var vehicleData = ReadDataFromCloudBlob(blobContainer, "incident.csv");
 
             var batchOperations = CreateBatchOperations(vehicleData);
@@ -32,7 +33,7 @@ namespace VehicleSearch
             UploadToTheCloudzBatch(table, batchOperations).Wait();
             TuneThisUp(table, tableOperations);
 
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         public static IList<VehicleData> ReadDataFromFile(string fileLocation)
@@ -43,7 +44,7 @@ namespace VehicleSearch
                 Stopwatch watch = Stopwatch.StartNew();
                 var csv = new CsvReader(sr);
                 var records =
-                    csv.GetRecords<VehicleData>()
+                    csv.GetRecords<VehicleData>().Take(100)
                         .Where(v => v.Mdl.All(char.IsLetterOrDigit))
                         .OrderBy(v => v.Mdl)
                         .ThenBy(v => v.IncidentDateTime)
@@ -190,7 +191,7 @@ namespace VehicleSearch
                 {
                     PartitionKey = data.Mdl,
                     RowKey = Guid.NewGuid().ToString(),
-                    Latitude = data.Latitude,
+                    Latitude = data.Latitude.StartsWith("-") ? data.Latitude : "-" + data.Latitude,
                     Longitude = data.Longitude,
                     IncidentDateTime = data.IncidentDateTime
                 });
@@ -205,7 +206,7 @@ namespace VehicleSearch
             {
                 PartitionKey = vehicleData.Mdl,
                 RowKey = Guid.NewGuid().ToString(),
-                Latitude = vehicleData.Latitude,
+                Latitude = vehicleData.Latitude.StartsWith("-") ? vehicleData.Latitude : "-" + vehicleData.Latitude,
                 Longitude = vehicleData.Longitude,
                 IncidentDateTime = vehicleData.IncidentDateTime
             });

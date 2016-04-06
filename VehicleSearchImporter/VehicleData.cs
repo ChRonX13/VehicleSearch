@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VehicleSearch
+namespace VehicleSearchImporter
 {
     public class VehicleData
     {

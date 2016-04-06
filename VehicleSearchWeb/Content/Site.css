@@ -21,6 +21,6 @@
     background-color: #00AEEF;
 }
 
-#bootstrap-overrides h1 {
+#bootstrap-overrides .jumbotron h1 {
     color: white;
 }

@@ -3,10 +3,20 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Vehicle Search";
 }
+
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+<script src='https://api.mapbox.com/mapbox.js/plugins/mapbox-directions.js/v0.4.0/mapbox.directions.js'></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+<link href="https://cdn.jsdelivr.net/animatecss/3.5.1/animate.min.css" rel='stylesheet' />
+
 <style>
     body {
     color:#404040;
-    font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
     margin:0;
     padding:0;
     -webkit-font-smoothing:antialiased;
@@ -30,7 +40,7 @@
   .sidebar {
     float: left;
     width:20%;
-    height:600px;
+    height:1024px;
     overflow:hidden;
     border-right:1px solid rgba(0,0,0,0.25);
   }
@@ -42,7 +52,7 @@
   }
   .map {
     overflow: auto;
-    height: 600px;
+    height: 1024px;
   }
   .heading {
     background:#fff;
@@ -103,7 +113,6 @@
     display:none;
   }
   .leaflet-popup-content {
-    font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
     padding:0;
     width:200px;
   }
@@ -131,7 +140,7 @@
         @using (Html.BeginForm("Search", "Home", FormMethod.Get))
         {
             <div class="input-group input-group-lg col-md-10 col-md-offset-1">
-                @Html.TextBox("SearchString", null, new {@class = "form-control input-lg", placeholder = "Vehicle MDL", autocomplete = "off" })
+                @Html.TextBox("SearchString", null, new {@class = "form-control input-lg", placeholder = "Vehicle MDL", autocomplete = "off", autofocus = "true" })
                 <span class="input-group-btn">
                     <button class="btn btn-danger" type="submit">
                         <span class="glyphicon glyphicon-search"></span>
@@ -142,13 +151,26 @@
     </div>
 </div>
 
+<script>
+    $(document).ready(function () {
+        var model = @Html.Raw(Json.Encode(Model));
+        if (!model) {
+            $("body").addClass("animated slideInDown");
+        } else {
+            $('html, body').animate({
+                scrollTop: $("#maparea").offset().top
+            }, 1000);
+        }
+    });
+</script>
+
 @if (Model != null && Model.Vehicles != null)
 {
     <hr/>
-    <div class="container-fluid">
+    <div id="maparea" class="container-fluid">
         <div class='sidebar'>
             <div class='heading'>
-                <h1>Vehicles</h1>
+                <h1>@Model.MDL Found</h1>
             </div>
             <div id='listings' class='listings'></div>
         </div>
@@ -162,7 +184,7 @@
 
             // Once we've got a position, zoom and center the map
             // on it, and add a single marker.
-            map.on('locationfound', function(e) {
+            map.on('locationfound', function (e) {
                 map.panTo(e.latlng);
 
                 myLayer.setGeoJSON({
@@ -204,8 +226,8 @@
                     ]
                 },
                 properties: {
-                    title: '@vehicle.PartitionKey',
-                    description: '@vehicle.IncidentDateTime',
+                    title: '@vehicle.IncidentDateTime',
+                    description: '@vehicle.Latitude, @vehicle.Longitude',
                     // one can customize markers by adding simplestyle properties
                     // https://www.mapbox.com/guides/an-open-platform/#simplestyle
                     'marker-size': 'medium',
@@ -235,7 +257,7 @@
                 el.className += ' active';
             }
 
-            featureLayer.eachLayer(function(locale) {
+            featureLayer.eachLayer(function (locale) {
                 // Shorten locale.feature.properties to just `prop` so we're not
                 // writing this long form over and over again.
                 var prop = locale.feature.properties;
@@ -259,7 +281,7 @@
                 var details = listing.appendChild(document.createElement('div'));
                 details.innerHTML = prop.description;
 
-                link.onclick = function() {
+                link.onclick = function () {
                     setActive(listing);
 
                     // When a menu item is clicked, animate the map to center
@@ -270,7 +292,7 @@
                 };
 
                 // Marker interaction
-                locale.on('click', function() {
+                locale.on('click', function () {
                     // 1. center the map on the selected marker.
                     map.panTo(locale.getLatLng());
 
@@ -281,7 +303,7 @@
                             { latitude: 33.6, longitude: -95.4431 },
                             { latitude: 33.2, longitude: -95.4431 }
                         ],
-                        function(err, res) {
+                        function (err, res) {
                             // res is a document with directions
                         });
                 });

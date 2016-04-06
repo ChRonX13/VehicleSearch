@@ -36,7 +36,8 @@ namespace VehicleData
             return new VehicleResults
             {
                 TimeTaken = watch.ElapsedMilliseconds,
-                Vehicles = vehicles
+                Vehicles = vehicles,
+                MDL = mdl
             };
         }
 
