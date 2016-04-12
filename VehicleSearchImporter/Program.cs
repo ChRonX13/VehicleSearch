@@ -22,8 +22,8 @@ namespace VehicleSearchImporter
 
             var blobContainer = GetCloudBlobContainer(cloudStorageAccount, "trafficdata");
 
-            //var vehicleData = ReadDataFromFile(@"G:\MSWorkspace\incident.csv");
-            var vehicleData = ReadDataFromCloudBlob(blobContainer, "incident.csv");
+            var vehicleData = ReadDataFromFile(@"G:\MSWorkspace\incident.csv");
+            //var vehicleData = ReadDataFromCloudBlob(blobContainer, "incident.csv");
 
             var batchOperations = CreateBatchOperations(vehicleData);
             var tableOperations = CreateOperations(vehicleData);

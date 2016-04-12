@@ -31,7 +31,7 @@ namespace VehicleData
 
             Stopwatch watch = Stopwatch.StartNew();
 
-            var vehicles = _table.ExecuteQuery(query).ToList();
+            var vehicles = _table.ExecuteQuery(query).OrderByDescending(v => v.IncidentDateTime).ToList();
 
             return new VehicleResults
             {
