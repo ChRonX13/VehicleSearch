@@ -140,7 +140,7 @@
         @using (Html.BeginForm("Search", "Home", FormMethod.Get))
         {
             <div class="input-group input-group-lg col-md-10 col-md-offset-1">
-                @Html.TextBox("SearchString", null, new {@class = "form-control input-lg", placeholder = "Vehicle MDL", autocomplete = "off", autofocus = "true" })
+                @Html.TextBox("SearchString", null, new {@class = "form-control input-lg", placeholder = "Vehicle MDL", autocomplete = "off", autofocus = "true", required = "true" })
                 <span class="input-group-btn">
                     <button class="btn btn-danger" type="submit">
                         <span class="glyphicon glyphicon-search"></span>

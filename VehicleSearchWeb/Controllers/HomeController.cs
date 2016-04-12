@@ -22,7 +22,7 @@ namespace VehicleSearchWeb.Controllers
                 return View("Index", vehicles);
             }
 
-            return null;
+            return View("Index");
         }
     }
 }
