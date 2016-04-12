@@ -13,11 +13,16 @@ namespace VehicleSearchWeb.Controllers
 
         public ActionResult Search(string searchString)
         {
-            IVehicleRepository vehicleRepository = new VehicleRepository();
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                IVehicleRepository vehicleRepository = new VehicleRepository();
 
-            var vehicles = vehicleRepository.GetVehicle(searchString);
+                var vehicles = vehicleRepository.GetVehicle(searchString.Trim());
 
-            return View("Index", vehicles);
+                return View("Index", vehicles);
+            }
+
+            return null;
         }
     }
 }
